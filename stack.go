@@ -5,14 +5,15 @@ type stack struct {
 	visited [][]int
 }
 
-func (s *stack) stackPush(x int, y int) {
+func (s *stack) stackPush(x int, y int) { //dodaje element do stosu
 	s.list = append(s.list, []int{x, y})
 }
 
 func (s *stack) stackPop() []int { //zwraca pierwszy element i usuwa go
-	var value []int = s.list[0] //zczytywanie pierwszej w kolejności wartości
-	s.list = s.list[1:]         //usuwanie pierwszej wartości z listy
-	return value                //zwrot wartości
+	var value []int = s.list[0]
+	s.list = s.list[1:]
+	s.visited = append(s.visited, value)
+	return value
 
 }
 
