@@ -31,7 +31,7 @@ func main() {
 		start_pos: []int{},
 	}
 
-	dd.gridInit(10, 10, 15)
+	dd.gridInit(40, 10, 15)
 	dd.startInit(0, 0)
 	dd.createMaze()
 	//fmt.Println(dd.grid)

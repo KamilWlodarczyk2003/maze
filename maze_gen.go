@@ -10,7 +10,7 @@ type dfs struct {
 	start_pos []int
 }
 
-/*	Pomysł chatagpt
+/*	Pomysł od chatagpt
 
 1. Reprezentacja binarna ścian
 Każda komórka może być reprezentowana jako liczba całkowita, gdzie każdy bit odpowiada obecności ściany w określonym kierunku:
@@ -158,37 +158,30 @@ func shuffle(slice [][]int) { //funkcja od ChatGPT, przetasowuje slice
 	})
 }
 
-func (d *dfs) createMaze() {
+func (d *dfs) createMaze() { //tworzenie labiryntu
 	stos := stack{
 		list:    [][]int{},
-		visited: [][]int{},
+		visited: make(map[[2]int]bool),
 	}
 	stos.stackPush(d.start_pos[0], d.start_pos[1])
 	//current := []int{0, 0}
-	last_val := []int{-1, -1}
+	//last_val := []int{-1, -1}
 
 	for !stos.emptyCheck() {
 		//fmt.Println("lista:", stos.list)
 		//fmt.Println("visited:", stos.visited)
 
 		current := stos.stackPop()
-		if last_val[0] != -1 && last_val[1] != -1 {
-			d.wallGen(current[1], current[0], last_val[1], last_val[0])
-		}
+		//if last_val[0] != -1 && last_val[1] != -1 {
+		//d.wallGen(current[1], current[0], last_val[1], last_val[0])
+		//}
 
 		//fmt.Println(current)
 		neighbors := findNeighbors(current[1], current[0], len(d.grid[0]), len(d.grid))
 
 		fixedNghb := [][]int{}
 		for _, vn := range neighbors { //sprawdzenie czy elementy są w visited
-			isVisited := false
-			for _, vs := range stos.visited {
-				if vn[0] == vs[0] && vn[1] == vs[1] {
-					isVisited = true
-					break
-				}
-			}
-			if !isVisited {
+			if !stos.visited[[2]int{vn[0], vn[1]}] {
 				fixedNghb = append(fixedNghb, vn)
 			}
 		}
@@ -198,9 +191,10 @@ func (d *dfs) createMaze() {
 			next := fixedNghb[0]
 			d.wallGen(current[1], current[0], next[1], next[0])
 			stos.stackPush(next[0], next[1])
+			stos.visited[[2]int{next[0], next[1]}] = true
 		}
 
-		last_val = current
+		//last_val = current
 
 	}
 

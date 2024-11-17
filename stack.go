@@ -2,7 +2,7 @@ package main
 
 type stack struct {
 	list    [][]int
-	visited [][]int
+	visited map[[2]int]bool
 }
 
 func (s *stack) stackPush(x int, y int) { //dodaje element do stosu
@@ -12,7 +12,7 @@ func (s *stack) stackPush(x int, y int) { //dodaje element do stosu
 func (s *stack) stackPop() []int { //zwraca pierwszy element i usuwa go
 	var value []int = s.list[len(s.list)-1]
 	s.list = s.list[:(len(s.list) - 1)]
-	s.visited = append(s.visited, value)
+	//s.visited = append(s.visited, value)
 	return value
 
 }
