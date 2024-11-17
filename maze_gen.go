@@ -120,9 +120,7 @@ func (d *dfs) gridInit(x int, y int, val int) { //tworzy macierz o rozmiarach x 
 }
 
 func (d *dfs) startInit(x int, y int) {
-	d.start_pos = make([]int, 2)
-	d.start_pos[0] = y
-	d.start_pos[1] = x
+	d.start_pos = []int{y, x}
 }
 
 func findNeighbors(x, y, maxX, maxY int) [][]int { //Funkcja od ChatGPT, znajduje sąsiadów na podstawie aktualnych x,y
@@ -181,7 +179,7 @@ func (d *dfs) createMaze() {
 		//fmt.Println(current)
 		neighbors := findNeighbors(current[1], current[0], len(d.grid[0]), len(d.grid))
 
-		filteredNeighbors := [][]int{}
+		fixedNghb := [][]int{}
 		for _, vn := range neighbors { //sprawdzenie czy elementy są w visited
 			isVisited := false
 			for _, vs := range stos.visited {
@@ -190,22 +188,16 @@ func (d *dfs) createMaze() {
 					break
 				}
 			}
-			for _, vs := range stos.list { //sprawdzenie czy elementy są już na stosie
-				if vn[0] == vs[0] && vn[1] == vs[1] {
-					isVisited = true
-					break
-				}
-			}
 			if !isVisited {
-				filteredNeighbors = append(filteredNeighbors, vn)
+				fixedNghb = append(fixedNghb, vn)
 			}
 		}
-		neighbors = filteredNeighbors
-
-		shuffle(neighbors)
-
-		for _, v := range neighbors {
-			stos.stackPush(v[0], v[1])
+		if len(fixedNghb) > 0 {
+			stos.stackPush(current[0], current[1])
+			shuffle(fixedNghb)
+			next := fixedNghb[0]
+			d.wallGen(current[1], current[0], next[1], next[0])
+			stos.stackPush(next[0], next[1])
 		}
 
 		last_val = current
