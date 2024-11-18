@@ -1,5 +1,7 @@
 package main
 
+import "sort"
+
 type stack struct {
 	list    [][]int
 	visited map[[2]int]bool
@@ -23,4 +25,12 @@ func (s *stack) emptyCheck() bool { //sprawdza czy stos jest pusty
 	} else {
 		return false
 	}
+}
+
+func (s *stack) pushWithValue(x int, y int, f int) {
+	s.list = append(s.list, []int{x, y, f})
+
+	sort.Slice(s.list, func(i, j int) bool {
+		return s.list[i][2] > s.list[j][2] // Sortowanie według wartości f
+	})
 }

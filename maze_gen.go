@@ -27,51 +27,36 @@ Przykład:
 0000 (0): Brak ścian (wolna komórka).
 */
 
-func (d *dfs) wallGen(x1, y1, x2, y2 int) { // zasady powstawania ścian
-	if x2 == (x1 + 1) {
-		if d.grid[y1][x1]&4 != 0 { //sprawdzenie czy dany bit nie został już usunięty
-			d.grid[y1][x1] -= 4
-		}
-		if d.grid[y2][x2]&1 != 0 {
-			d.grid[y2][x2] -= 1
-		}
+func (d *dfs) wallGen(x1, y1, x2, y2 int) {
+	// Ruch w poziomie (wschód/zachód)
+	if x2 == x1+1 { // Ruch na wschód
+		d.grid[y1][x1] &= ^2 // Usuń ścianę wschodnią z bieżącej komórki
+		d.grid[y2][x2] &= ^8 // Usuń ścianę zachodnią z sąsiedniej komórki
+	} else if x2 == x1-1 { // Ruch na zachód
+		d.grid[y1][x1] &= ^8 // Usuń ścianę zachodnią z bieżącej komórki
+		d.grid[y2][x2] &= ^2 // Usuń ścianę wschodnią z sąsiedniej komórki
 	}
-	if x2 == (x1 - 1) {
-		if d.grid[y1][x1]&1 != 0 {
-			d.grid[y1][x1] -= 1
-		}
-		if d.grid[y2][x2]&4 != 0 {
-			d.grid[y2][x2] -= 4
-		}
-	}
-	if y2 == (y1 + 1) {
-		if d.grid[y1][x1]&2 != 0 {
-			d.grid[y1][x1] -= 2
-		}
-		if d.grid[y2][x2]&8 != 0 {
-			d.grid[y2][x2] -= 8
-		}
-	}
-	if y2 == (y1 - 1) {
-		if d.grid[y1][x1]&8 != 0 {
-			d.grid[y1][x1] -= 8
-		}
-		if d.grid[y2][x2]&2 != 0 {
-			d.grid[y2][x2] -= 2
-		}
+
+	// Ruch w pionie (północ/południe)
+	if y2 == y1+1 { // Ruch na południe
+		d.grid[y1][x1] &= ^4 // Usuń ścianę południową z bieżącej komórki
+		d.grid[y2][x2] &= ^1 // Usuń ścianę północną z sąsiedniej komórki
+	} else if y2 == y1-1 { // Ruch na północ
+		d.grid[y1][x1] &= ^1 // Usuń ścianę północną z bieżącej komórki
+		d.grid[y2][x2] &= ^4 // Usuń ścianę południową z sąsiedniej komórki
 	}
 }
 
-func (d *dfs) drawMaze(grid [][]int) { //Funkcja od chatgpt do wizualizacji labiryntu w konsoli
+func (d *dfs) drawMaze(grid [][]int) {
 	rows := len(grid)
 	cols := len(grid[0])
 
 	// Iteruj przez wiersze
 	for y := 0; y < rows; y++ {
-		// Rysowanie górnej części komórek (poziome ściany)
+		// Rysowanie górnych ścian komórek (poziome ściany)
 		for x := 0; x < cols; x++ {
 			fmt.Print("+")
-			if grid[y][x]&8 != 0 { // Ściana na północ
+			if grid[y][x]&1 != 0 { // Ściana na północ
 				fmt.Print("---")
 			} else {
 				fmt.Print("   ")
@@ -81,7 +66,7 @@ func (d *dfs) drawMaze(grid [][]int) { //Funkcja od chatgpt do wizualizacji labi
 
 		// Rysowanie bocznych ścian i wnętrza komórek
 		for x := 0; x < cols; x++ {
-			if grid[y][x]&1 != 0 { // Ściana na zachód
+			if grid[y][x]&8 != 0 { // Ściana na zachód
 				fmt.Print("|")
 			} else {
 				fmt.Print(" ")
@@ -91,10 +76,10 @@ func (d *dfs) drawMaze(grid [][]int) { //Funkcja od chatgpt do wizualizacji labi
 		fmt.Println("|")
 	}
 
-	// Rysowanie dolnej części ostatniego wiersza
+	// Rysowanie dolnych ścian ostatniego wiersza
 	for x := 0; x < cols; x++ {
 		fmt.Print("+")
-		if grid[rows-1][x]&2 != 0 { // Ściana na południe
+		if grid[rows-1][x]&4 != 0 { // Ściana na południe
 			fmt.Print("---")
 		} else {
 			fmt.Print("   ")
@@ -145,6 +130,30 @@ func findNeighbors(x, y, maxX, maxY int) [][]int { //Funkcja od ChatGPT, znajduj
 	}
 
 	return neighbors
+}
+
+func isPassable(grid [][]int, x1, y1, x2, y2 int) bool {
+	// Debugging - pokaż wartości komórek w formacie binarnym
+	//fmt.Printf("Current cell [%d, %d]: %b, Next cell [%d, %d]: %b\n", x1, y1, grid[y1][x1], x2, y2, grid[y2][x2])
+
+	// Oblicz kierunek ruchu
+	dx := x2 - x1
+	dy := y2 - y1
+
+	// Sprawdź przechodność na podstawie kierunku
+	switch {
+	case dx == 1: // Ruch na wschód
+		return (grid[y1][x1]&2 == 0) && (grid[y2][x2]&8 == 0)
+	case dx == -1: // Ruch na zachód
+		return (grid[y1][x1]&8 == 0) && (grid[y2][x2]&2 == 0)
+	case dy == 1: // Ruch na południe
+		return (grid[y1][x1]&4 == 0) && (grid[y2][x2]&1 == 0)
+	case dy == -1: // Ruch na północ
+		return (grid[y1][x1]&1 == 0) && (grid[y2][x2]&4 == 0)
+	default:
+		// Jeśli nie ma ruchu między sąsiadującymi polami, zwróć false
+		return false
+	}
 }
 
 func shuffle(slice [][]int) { //funkcja od ChatGPT, przetasowuje slice
