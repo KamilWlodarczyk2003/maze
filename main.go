@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"time"
+
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 /*
@@ -70,5 +73,185 @@ func main() {
 	//fmt.Println(findNeighbors(1, 2, 3, 3))
 
 	//ast.a_star_solving(dd.grid)
+
+	const screenW = int32(1280)
+	const screenH = int32(720)
+
+	rl.InitWindow(screenW, screenH, "Maze")
+	rec := rl.NewRectangle(0, 0, float32(screenW), float32(screenH))
+
+	stage := 0
+
+	current_input := 1
+	inputX := ""
+	inputY := ""
+
+	for !rl.WindowShouldClose() {
+		if stage == 0 { //--------------------------------------------Okno startowe
+			rl.BeginDrawing()
+
+			rl.ClearBackground(rl.Black)
+
+			txt := "Kamil Wlodarczyk"
+			txtlen := rl.MeasureText(txt, 50)
+			rl.DrawText(txt, screenW/2-txtlen/2-3, screenH/2-150+3, 50, rl.Magenta)
+			rl.DrawText(txt, screenW/2-txtlen/2-1, screenH/2-150+1, 50, rl.Black)
+			rl.DrawText(txt, screenW/2-txtlen/2, screenH/2-150, 50, rl.White)
+			txt = "labirynt z A*"
+			txtlen = rl.MeasureText(txt, 50)
+			rl.DrawText(txt, screenW/2-txtlen/2-3, screenH/2-90+3, 50, rl.Magenta)
+			rl.DrawText(txt, screenW/2-txtlen/2-1, screenH/2-90+1, 50, rl.Black)
+			rl.DrawText(txt, screenW/2-txtlen/2, screenH/2-90, 50, rl.White)
+			txt = "Press Enter to progress"
+			txtlen = rl.MeasureText(txt, 30)
+			rl.DrawText(txt, screenW/2-txtlen/2-3, screenH/2+3, 30, rl.Magenta)
+			rl.DrawText(txt, screenW/2-txtlen/2-1, screenH/2+1, 30, rl.Black)
+			rl.DrawText(txt, screenW/2-txtlen/2, screenH/2, 30, rl.White)
+
+			rl.EndDrawing()
+
+			if rl.IsKeyDown(rl.KeyEnter) {
+				stage = 1 // Przejdź do drugiego etapu
+				time.Sleep(500 * time.Millisecond)
+			}
+		} else if stage == 1 { //--------------------------------------------Wpisywanie wartości labiryntu
+
+			rl.BeginDrawing()
+
+			if rl.IsKeyPressed(rl.KeyTab) {
+				if current_input == 1 {
+					current_input = 2
+				} else {
+					current_input = 1
+				}
+			}
+
+			if rl.IsKeyPressed(rl.KeyBackspace) {
+				if current_input == 1 && len(inputX) > 0 {
+					inputX = inputX[:len(inputX)-1]
+				} else if current_input == 2 && len(inputY) > 0 {
+					inputY = inputY[:len(inputY)-1]
+				}
+			}
+
+			key := rl.GetCharPressed()
+
+			for key > 0 {
+				if key >= '0' && key <= '9' {
+					if current_input == 1 {
+						inputX += string(key)
+					} else if current_input == 2 {
+						inputY += string(key)
+					}
+				}
+				key = rl.GetCharPressed()
+			}
+
+			rl.ClearBackground(rl.Black)
+			//rec := rl.NewRectangle(0, 0, float32(screenW), float32(screenH))
+			rl.DrawRectangleRec(rec, rl.DarkPurple)
+
+			txt := "Podaj rozmiar labiryntu"
+			txtlen := rl.MeasureText(txt, 50)
+			rl.DrawText(txt, screenW/2-txtlen/2-1, screenH/2-150+1, 50, rl.Black)
+			rl.DrawText(txt, screenW/2-txtlen/2, screenH/2-150, 50, rl.White)
+
+			txt = "TAB aby przelaczyc miedzy wartosciami"
+			txtlen = rl.MeasureText(txt, 50)
+			rl.DrawText(txt, screenW/2-txtlen/2-1+300, screenH/2-90+1, 20, rl.Black)
+			rl.DrawText(txt, screenW/2-txtlen/2+300, screenH/2-90, 20, rl.White)
+
+			//pole X
+			koord1X := screenW/2 - 450
+			Koord1Y := int32(400)
+			//pole Y
+			koord2X := screenW/2 + 200
+			Koord2Y := int32(400)
+
+			if current_input == 1 {
+				rl.DrawRectangle(koord1X-5, Koord1Y-5, 310, 60, rl.Red)
+			} else if current_input == 2 {
+				rl.DrawRectangle(koord2X-5, Koord2Y-5, 310, 60, rl.Red)
+			}
+
+			rl.DrawText("X:", koord1X-70, Koord1Y, 55, rl.Black)
+			rl.DrawRectangle(koord1X, Koord1Y, 300, 50, rl.LightGray)
+			rl.DrawText(inputX, koord1X+10, Koord1Y+10, 30, rl.Black)
+
+			rl.DrawText("Y:", koord2X-70, Koord2Y, 55, rl.Black)
+			rl.DrawRectangle(koord2X, Koord2Y, 300, 50, rl.LightGray)
+			rl.DrawText(inputY, koord2X+10, Koord2Y+10, 30, rl.Black)
+
+			txt = "Press Enter to progress"
+			txtlen = rl.MeasureText(txt, 30)
+			rl.DrawText(txt, screenW/2-txtlen/2-1, screenH/2+160+1, 30, rl.Black)
+			rl.DrawText(txt, screenW/2-txtlen/2, screenH/2+160, 30, rl.White)
+
+			rl.EndDrawing()
+			if rl.IsKeyDown(rl.KeyEnter) {
+				stage = 2
+			}
+		} else if stage == 2 {
+			camera := rl.Camera3D{}
+			camera.Position = rl.NewVector3(10.0, 10.0, 10.0)
+			camera.Target = rl.NewVector3(0.0, 0.0, 0.0)
+			camera.Up = rl.NewVector3(0.0, 1.0, 0.0)
+			camera.Fovy = 45.0
+			camera.Projection = rl.CameraPerspective
+
+			cubePosition := rl.NewVector3(0.0, 0.0, 0.0)
+
+			rl.SetTargetFPS(60)
+			centerX := int(screenW / 2)
+			centerY := int(screenH / 2)
+			rl.HideCursor()
+
+			rl.SetTargetFPS(60)
+			for !rl.WindowShouldClose() {
+				rl.UpdateCamera(&camera, rl.CameraFree) // Update camera with free camera mode
+				rl.DrawFPS(1200, 10)
+
+				rl.SetMousePosition(centerX, centerY)
+
+				if rl.IsKeyDown(rl.KeyZ) {
+					camera.Target = rl.NewVector3(0.0, 0.0, 0.0)
+				}
+
+				rl.BeginDrawing()
+
+				rl.ClearBackground(rl.RayWhite)
+
+				rl.BeginMode3D(camera)
+
+				rl.DrawCube(cubePosition, 2.0, 2.0, 2.0, rl.Red)
+				rl.DrawCube(rl.NewVector3(20.0, 0.0, 20.0), 2.0, 2.0, 2.0, rl.Red)
+				rl.DrawCubeWires(cubePosition, 2.0, 2.0, 2.0, rl.Maroon)
+
+				rl.DrawGrid(10, 1.0)
+
+				rl.EndMode3D()
+
+				rl.DrawRectangle(10, 10, 320, 133, rl.Fade(rl.SkyBlue, 0.5))
+				rl.DrawRectangleLines(10, 10, 320, 133, rl.Blue)
+
+				rl.DrawText("Free camera default controls:", 20, 20, 10, rl.Black)
+				rl.DrawText("- Mouse Wheel to Zoom in-out", 40, 40, 10, rl.DarkGray)
+				rl.DrawText("- Mouse Wheel Pressed to Pan", 40, 60, 10, rl.DarkGray)
+				rl.DrawText("- Z to zoom to (0, 0, 0)", 40, 120, 10, rl.DarkGray)
+
+				rl.EndDrawing()
+			}
+		}
+
+	}
+	fmt.Println("X:", inputX)
+	fmt.Println("Y:", inputY)
+
+	/*
+
+
+	 */
+
+	rl.CloseWindow()
 
 }
