@@ -27,27 +27,24 @@ Przykład:
 0000 (0): Brak ścian (wolna komórka).
 */
 
-func (d *dfs) wallGen(x1, y1, x2, y2 int) {
-	// Ruch w poziomie (wschód/zachód)
-	if x2 == x1+1 { // Ruch na wschód
-		d.grid[y1][x1] &= ^2 // Usuń ścianę wschodnią z bieżącej komórki
-		d.grid[y2][x2] &= ^8 // Usuń ścianę zachodnią z sąsiedniej komórki
-	} else if x2 == x1-1 { // Ruch na zachód
-		d.grid[y1][x1] &= ^8 // Usuń ścianę zachodnią z bieżącej komórki
-		d.grid[y2][x2] &= ^2 // Usuń ścianę wschodnią z sąsiedniej komórki
+func (d *dfs) wallGen(x1, y1, x2, y2 int) { //generowanie ściań labiryntu [&= ^x zeruje bit o wartości x]
+	if x2 == x1+1 { //wschód
+		d.grid[y1][x1] &= ^2
+		d.grid[y2][x2] &= ^8
+	} else if x2 == x1-1 { //zachód
+		d.grid[y1][x1] &= ^8
+		d.grid[y2][x2] &= ^2
+	} else if y2 == y1+1 { //południe
+		d.grid[y1][x1] &= ^4
+		d.grid[y2][x2] &= ^1
+	} else if y2 == y1-1 { //północ
+		d.grid[y1][x1] &= ^1
+		d.grid[y2][x2] &= ^4
 	}
 
-	// Ruch w pionie (północ/południe)
-	if y2 == y1+1 { // Ruch na południe
-		d.grid[y1][x1] &= ^4 // Usuń ścianę południową z bieżącej komórki
-		d.grid[y2][x2] &= ^1 // Usuń ścianę północną z sąsiedniej komórki
-	} else if y2 == y1-1 { // Ruch na północ
-		d.grid[y1][x1] &= ^1 // Usuń ścianę północną z bieżącej komórki
-		d.grid[y2][x2] &= ^4 // Usuń ścianę południową z sąsiedniej komórki
-	}
 }
 
-func (d *dfs) drawMaze(grid [][]int) {
+func (d *dfs) drawMaze(grid [][]int) { //funkcja od chatagpt wizualizująca labirynt w konsoli
 	rows := len(grid)
 	cols := len(grid[0])
 
@@ -91,11 +88,11 @@ func (d *dfs) drawMaze(grid [][]int) {
 func (d *dfs) gridInit(x int, y int, val int) { //tworzy macierz o rozmiarach x y wypełniając ją wartościa val
 	matrix := make([][]int, y)
 
-	for v := range matrix {
+	for v := range matrix { //tworzenie macierzy
 		matrix[v] = make([]int, x)
 	}
 
-	for yv := range matrix {
+	for yv := range matrix { //wypełnienie macierzy
 		for i := 0; i < x; i++ {
 			matrix[yv][i] = val
 		}
@@ -108,24 +105,23 @@ func (d *dfs) startInit(x int, y int) {
 	d.start_pos = []int{y, x}
 }
 
-func findNeighbors(x, y, maxX, maxY int) [][]int { //Funkcja od ChatGPT, znajduje sąsiadów na podstawie aktualnych x,y
-	// Lista sąsiadów
+func findNeighbors(x, y, maxX, maxY int) [][]int { //znajduje sąsiadów podając koordynaty pola oraz maksymalny zakres maciezry
+
 	var neighbors [][]int
 
-	// Góra
-	if y > 0 {
+	if y > 0 { // Góra
 		neighbors = append(neighbors, []int{y - 1, x})
 	}
-	// Dół
-	if y < maxY-1 {
+
+	if y < maxY-1 { // Dół
 		neighbors = append(neighbors, []int{y + 1, x})
 	}
-	// Lewo
-	if x > 0 {
+
+	if x > 0 { // Lewo
 		neighbors = append(neighbors, []int{y, x - 1})
 	}
-	// Prawo
-	if x < maxX-1 {
+
+	if x < maxX-1 { // Prawo
 		neighbors = append(neighbors, []int{y, x + 1})
 	}
 
@@ -133,27 +129,18 @@ func findNeighbors(x, y, maxX, maxY int) [][]int { //Funkcja od ChatGPT, znajduj
 }
 
 func isPassable(grid [][]int, x1, y1, x2, y2 int) bool {
-	// Debugging - pokaż wartości komórek w formacie binarnym
-	//fmt.Printf("Current cell [%d, %d]: %b, Next cell [%d, %d]: %b\n", x1, y1, grid[y1][x1], x2, y2, grid[y2][x2])
 
-	// Oblicz kierunek ruchu
-	dx := x2 - x1
-	dy := y2 - y1
-
-	// Sprawdź przechodność na podstawie kierunku
-	switch {
-	case dx == 1: // Ruch na wschód
+	if x2-x1 == 1 { //ruch na wschód
 		return (grid[y1][x1]&2 == 0) && (grid[y2][x2]&8 == 0)
-	case dx == -1: // Ruch na zachód
+	} else if x2-x1 == -1 { //ruch na zachód
 		return (grid[y1][x1]&8 == 0) && (grid[y2][x2]&2 == 0)
-	case dy == 1: // Ruch na południe
+	} else if y2-y1 == 1 { //ruch na południe
 		return (grid[y1][x1]&4 == 0) && (grid[y2][x2]&1 == 0)
-	case dy == -1: // Ruch na północ
+	} else if y2-y1 == -1 { //ruch na północ
 		return (grid[y1][x1]&1 == 0) && (grid[y2][x2]&4 == 0)
-	default:
-		// Jeśli nie ma ruchu między sąsiadującymi polami, zwróć false
-		return false
 	}
+
+	return false
 }
 
 func shuffle(slice [][]int) { //funkcja od ChatGPT, przetasowuje slice
@@ -181,26 +168,23 @@ func (d *dfs) createMaze() { //tworzenie labiryntu
 		//fmt.Println("visited:", stos.visited)
 
 		current := stos.stackPop()
-		//if last_val[0] != -1 && last_val[1] != -1 {
-		//d.wallGen(current[1], current[0], last_val[1], last_val[0])
-		//}
 
 		//fmt.Println(current)
 		neighbors := findNeighbors(current[1], current[0], len(d.grid[0]), len(d.grid))
 
 		fixedNghb := [][]int{}
-		for _, vn := range neighbors { //sprawdzenie czy elementy są w visited
-			if !stos.visited[[2]int{vn[0], vn[1]}] {
+		for _, vn := range neighbors {
+			if !stos.visited[[2]int{vn[0], vn[1]}] { //sprawdzenie czy elementy są w visited
 				fixedNghb = append(fixedNghb, vn)
 			}
 		}
 		if len(fixedNghb) > 0 {
-			stos.stackPush(current[0], current[1])
-			shuffle(fixedNghb)
-			next := fixedNghb[0]
-			d.wallGen(current[1], current[0], next[1], next[0])
-			stos.stackPush(next[0], next[1])
-			stos.visited[[2]int{next[0], next[1]}] = true
+			stos.stackPush(current[0], current[1])              //dodanie na stos
+			shuffle(fixedNghb)                                  //tasowanie
+			next := fixedNghb[0]                                //pierwsza wartość z przetasowanej listy
+			d.wallGen(current[1], current[0], next[1], next[0]) //wyburzenie ściany między next a aktualnym polem
+			stos.stackPush(next[0], next[1])                    //dodanie sąsiada do stosu
+			stos.visited[[2]int{next[0], next[1]}] = true       //dodanie sąsiada do odwiedzonych
 		}
 
 		//last_val = current
