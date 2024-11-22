@@ -25,6 +25,64 @@ func makeGrid(x int, y int, val int) [][]int { //tworzy macierz o rozmiarach x y
 }
 */
 
+type wall struct {
+	vector rl.Vector3
+	width  float32
+	height float32
+	length float32
+}
+
+func wall_gen_rl(grid [][]int) []wall {
+	rows := len(grid)    //Y
+	cols := len(grid[0]) //X
+
+	walls := []wall{}
+
+	for y := 0; y < rows; y++ {
+		for x := 0; x < cols; x++ {
+
+			if grid[y][x]&1 != 0 {
+				walls = append(walls, wall{
+					vector: rl.NewVector3(float32(x)+0.5, 0, float32(y)),
+					width:  1,
+					height: 1,
+					length: 0.1,
+				})
+			}
+
+			if grid[y][x]&2 != 0 {
+				walls = append(walls, wall{
+					vector: rl.NewVector3(float32(x)+1, 0, float32(y)+0.5),
+					width:  0.1,
+					height: 1,
+					length: 1,
+				})
+			}
+
+			if grid[y][x]&4 != 0 {
+				walls = append(walls, wall{
+					vector: rl.NewVector3(float32(x)+0.5, 0, float32(y)+1),
+					width:  1,
+					height: 1,
+					length: 0.1,
+				})
+
+			}
+
+			if grid[y][x]&8 != 0 {
+				walls = append(walls, wall{
+					vector: rl.NewVector3(float32(x), 0, float32(y)+0.5),
+					width:  0.1,
+					height: 1,
+					length: 1,
+				})
+			}
+
+		}
+	}
+	return walls
+}
+
 func main() {
 
 	//pole := makeGrid(10, 10, 15)
@@ -47,27 +105,28 @@ func main() {
 		{12, 7, 12, 6, 13, 6},
 	}
 
-	dd.gridInit(10, 10, 15)
+	dd.gridInit(51, 51, 15)
 	dd.startInit(0, 0)
 	dd.createMaze()
 	//dd.grid = grid
 	fmt.Println(dd.grid)
-	dd.drawMaze(dd.grid)
+	//dd.drawMaze(dd.grid)
 
 	ast := astar{
 		grid:       grid,
 		start_pos:  [2]int{0, 0},
-		finish_pos: [2]int{5, 5},
+		finish_pos: [2]int{50, 50},
 		open_list: stack{
 			list: [][]int{},
 		},
 		closed_list: make(map[[2]int]bool),
 		parent:      make(map[[2]int][2]int),
 		g_cost:      make(map[[2]int]int),
+		path:        [][2]int{},
 	}
 	fmt.Println(ast.manhEstimate([]int{2, 0}))
 	ast.a_star_solving(dd.grid)
-	ast.displaySolution(dd.grid)
+	//ast.displaySolution(dd.grid)
 	//fmt.Println(findNeighbors(1, 1, 3, 3))
 	//fmt.Println(findNeighbors(2, 1, 3, 3))
 	//fmt.Println(findNeighbors(1, 2, 3, 3))
@@ -191,7 +250,8 @@ func main() {
 			if rl.IsKeyDown(rl.KeyEnter) {
 				stage = 2
 			}
-		} else if stage == 2 {
+		} else if stage == 2 { //--------------------------------------------ekran 3D
+			dupa := 0
 			camera := rl.Camera3D{}
 			camera.Position = rl.NewVector3(10.0, 10.0, 10.0)
 			camera.Target = rl.NewVector3(0.0, 0.0, 0.0)
@@ -199,7 +259,7 @@ func main() {
 			camera.Fovy = 45.0
 			camera.Projection = rl.CameraPerspective
 
-			cubePosition := rl.NewVector3(0.0, 0.0, 0.0)
+			//cubePosition := rl.NewVector3(0.0, 0.0, 0.0)
 
 			rl.SetTargetFPS(60)
 			centerX := int(screenW / 2)
@@ -207,11 +267,24 @@ func main() {
 			rl.HideCursor()
 
 			rl.SetTargetFPS(60)
+
+			lastTime := time.Now()
+			index := 0
+
+			walls := wall_gen_rl(dd.grid)
+
 			for !rl.WindowShouldClose() {
-				rl.UpdateCamera(&camera, rl.CameraFree) // Update camera with free camera mode
+
+				rl.UpdateCamera(&camera, rl.CameraFree)
+
 				rl.DrawFPS(1200, 10)
 
 				rl.SetMousePosition(centerX, centerY)
+
+				if time.Since(lastTime).Seconds() >= 0.000001 && index < len(ast.visited_list) { //rysowanie nowego pola co określoną ilość sekund
+					lastTime = time.Now()
+					index++
+				}
 
 				if rl.IsKeyDown(rl.KeyZ) {
 					camera.Target = rl.NewVector3(0.0, 0.0, 0.0)
@@ -223,9 +296,33 @@ func main() {
 
 				rl.BeginMode3D(camera)
 
-				rl.DrawCube(cubePosition, 2.0, 2.0, 2.0, rl.Red)
-				rl.DrawCube(rl.NewVector3(20.0, 0.0, 20.0), 2.0, 2.0, 2.0, rl.Red)
-				rl.DrawCubeWires(cubePosition, 2.0, 2.0, 2.0, rl.Maroon)
+				for _, v_wall := range walls {
+					rl.DrawCube(v_wall.vector, v_wall.width, v_wall.height, v_wall.length, rl.Black)
+				}
+
+				//for i := 0; i < index; i++ {
+				//rl.DrawCube(rl.NewVector3(float32(ast.visited_list[i][0])+0.5, 0.0, float32(ast.visited_list[i][1])+0.5), 1, 0.05, 1, rl.Red)
+				//}
+
+				for _, vn := range ast.visited_list {
+					rl.DrawCube(rl.NewVector3(float32(vn[0])+0.5, 0.1, float32(vn[1])+0.5), 1, 0.05, 1, rl.Red)
+				}
+
+				for _, vn := range ast.path {
+					rl.DrawCube(rl.NewVector3(float32(vn[0])+0.5, 0.2, float32(vn[1])+0.5), 1, 0.1, 1, rl.Yellow)
+				}
+
+				if index == len(ast.visited_list) {
+					for _, vn := range ast.path {
+						rl.DrawCube(rl.NewVector3(float32(vn[0])+0.5, 0.2, float32(vn[1])+0.5), 1, 0.1, 1, rl.Yellow)
+					}
+				}
+
+				//rl.DrawCube(rl.NewVector3(3+0.5, 0.5, 3), 0.1, 1, 1, rl.Black)
+
+				//rl.DrawCube(cubePosition, 2.0, 2.0, 2.0, rl.Red)
+				//rl.DrawCube(rl.NewVector3(20.0, 0.0, 20.0), 2.0, 2.0, 2.0, rl.Red)
+				//rl.DrawCubeWires(cubePosition, 2.0, 2.0, 2.0, rl.Maroon)
 
 				rl.DrawGrid(10, 1.0)
 
@@ -240,6 +337,16 @@ func main() {
 				rl.DrawText("- Z to zoom to (0, 0, 0)", 40, 120, 10, rl.DarkGray)
 
 				rl.EndDrawing()
+
+				fmt.Println("index: ", index)
+				fmt.Println("len: ", len(ast.visited_list))
+				fmt.Println("-----------------------------------------")
+
+				if dupa == 0 {
+					dd.drawMaze(dd.grid)
+					dupa = 1
+				}
+
 			}
 		}
 

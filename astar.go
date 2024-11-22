@@ -7,14 +7,15 @@ import (
 )
 
 type astar struct {
-	grid        [][]int
-	start_pos   [2]int            //pozycja startowa
-	finish_pos  [2]int            //wyjscie z labiryntu
-	open_list   stack             //lista pól do przetworzenia
-	closed_list map[[2]int]bool   //odwiedzone pola
-	parent      map[[2]int][2]int //rodzic danego pola
-	g_cost      map[[2]int]int    //koszt dojścia na pole
-	path        [][2]int          //droga do celu
+	grid         [][]int
+	start_pos    [2]int            //pozycja startowa
+	finish_pos   [2]int            //wyjscie z labiryntu
+	open_list    stack             //lista pól do przetworzenia
+	closed_list  map[[2]int]bool   //odwiedzone pola
+	parent       map[[2]int][2]int //rodzic danego pola
+	g_cost       map[[2]int]int    //koszt dojścia na pole
+	path         [][2]int          //droga do celu
+	visited_list [][2]int
 	//f_cost      map[[2]int]int
 }
 
@@ -49,7 +50,9 @@ func (a *astar) a_star_solving(grid [][]int) {
 	a.g_cost[[2]int(a.start_pos)] = 0
 
 	for !a.open_list.emptyCheck() {
+
 		current := a.open_list.stackPop() //zczytanie wartości z listy
+		a.visited_list = append(a.visited_list, [2]int(current))
 		current_pos := [2]int{current[0], current[1]}
 
 		if current_pos == a.finish_pos { //sprawdza czy dotarł do końca
@@ -92,6 +95,7 @@ func (a *astar) a_star_solving(grid [][]int) {
 	slices.Reverse(a.path) //odwraca listę aby zaczynać od punktu 0,0
 	//fmt.Println(a.g_cost)
 	fmt.Println(a.path)
+	fmt.Println(a.visited_list)
 }
 
 func (a *astar) displaySolution(grid [][]int) { //funkcja od chatgpt wizualizująca rozwiązanie labiryntu w konsoli
