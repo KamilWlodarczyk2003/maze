@@ -14,7 +14,6 @@ func (s *stack) stackPush(x int, y int) { //dodaje element do stosu
 func (s *stack) stackPop() []int { //zwraca ostni element (najwcześniej dodany) i usuwa go
 	var value []int = s.list[len(s.list)-1]
 	s.list = s.list[:(len(s.list) - 1)]
-	//s.visited = append(s.visited, value)
 	return value
 
 }
@@ -31,6 +30,6 @@ func (s *stack) pushWithValue(x int, y int, f int) {
 	s.list = append(s.list, []int{x, y, f})
 
 	sort.Slice(s.list, func(i, j int) bool {
-		return s.list[i][2] > s.list[j][2] // Sortowanie według wartości f, najmniejsza na koniec
+		return s.list[i][2] > s.list[j][2] // Sortowanie według wartości f, najmniejsza na koniec aby przy pop ją wyrzuciło
 	})
 }

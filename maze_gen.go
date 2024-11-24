@@ -27,7 +27,7 @@ Przykład:
 0000 (0): Brak ścian (wolna komórka).
 */
 
-func (d *dfs) wallGen(x1, y1, x2, y2 int) { //generowanie ściań labiryntu [&= ^x zeruje bit o wartości x]
+func (d *dfs) wallGen(x1, y1, x2, y2 int) { //generowanie ściań/przejść labiryntu [&= ^x zeruje bit o wartości x]
 	if x2 == x1+1 { //wschód
 		d.grid[y1][x1] &= ^2
 		d.grid[y2][x2] &= ^8
@@ -159,18 +159,13 @@ func (d *dfs) createMaze() { //tworzenie labiryntu
 		list:    [][]int{},
 		visited: make(map[[2]int]bool),
 	}
-	stos.stackPush(d.start_pos[0], d.start_pos[1])
-	//current := []int{0, 0}
-	//last_val := []int{-1, -1}
+	stos.stackPush(d.start_pos[0], d.start_pos[1]) //dodanie wartości startowej
 
-	for !stos.emptyCheck() {
-		//fmt.Println("lista:", stos.list)
-		//fmt.Println("visited:", stos.visited)
+	for !stos.emptyCheck() { //puki coś jest na stosie
 
 		current := stos.stackPop()
 
-		//fmt.Println(current)
-		neighbors := findNeighbors(current[1], current[0], len(d.grid[0]), len(d.grid))
+		neighbors := findNeighbors(current[1], current[0], len(d.grid[0]), len(d.grid)) //znajdowanie sąsiadów
 
 		fixedNghb := [][]int{}
 		for _, vn := range neighbors {
@@ -186,8 +181,6 @@ func (d *dfs) createMaze() { //tworzenie labiryntu
 			stos.stackPush(next[0], next[1])                    //dodanie sąsiada do stosu
 			stos.visited[[2]int{next[0], next[1]}] = true       //dodanie sąsiada do odwiedzonych
 		}
-
-		//last_val = current
 
 	}
 

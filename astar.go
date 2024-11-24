@@ -16,7 +16,6 @@ type astar struct {
 	g_cost       map[[2]int]int    //koszt dojścia na pole
 	path         [][2]int          //droga do celu
 	visited_list [][2]int
-	//f_cost      map[[2]int]int
 }
 
 func (a *astar) manhEstimate(current []int) int { //ewaluacja kosztu dotarcia do celu
@@ -37,7 +36,7 @@ func (a *astar) a_star_solving(grid [][]int) {
 	a.parent = make(map[[2]int][2]int)
 	a.g_cost = make(map[[2]int]int)
 
-	for y := 0; y < len(grid); y++ {
+	for y := 0; y < len(grid); y++ { //ustawienie ceny g na wysoką wartość (od chatgpt)
 		for x := 0; x < len(grid[0]); x++ {
 			if !(x == a.start_pos[1] && y == a.start_pos[0]) {
 				a.g_cost[[2]int{y, x}] = math.MaxInt
@@ -49,22 +48,22 @@ func (a *astar) a_star_solving(grid [][]int) {
 	a.open_list.pushWithValue(a.start_pos[0], a.start_pos[1], 0) //dodanie wartości startowej do listy
 	a.g_cost[[2]int(a.start_pos)] = 0
 
-	for !a.open_list.emptyCheck() {
+	for !a.open_list.emptyCheck() { //dopóki coś jest na liście
 
-		current := a.open_list.stackPop() //zczytanie wartości z listy
-		a.visited_list = append(a.visited_list, [2]int(current))
-		current_pos := [2]int{current[0], current[1]}
+		current := a.open_list.stackPop()                        //zczytanie wartości z listy
+		a.visited_list = append(a.visited_list, [2]int(current)) //dodanie do odwiedzonej listy
+		current_pos := [2]int{current[0], current[1]}            //format łatwiejszy do porównywania
 
 		if current_pos == a.finish_pos { //sprawdza czy dotarł do końca
 			break
 		}
 
-		a.closed_list[current_pos] = true //dodaje pole do odwiedzonych
-		neighbors := findNeighbors(current[0], current[1], len(grid[0]), len(grid))
+		a.closed_list[current_pos] = true                                           //dodaje pole do odwiedzonych
+		neighbors := findNeighbors(current[0], current[1], len(grid[0]), len(grid)) //szukanie sąsiadów
 
 		for _, vn := range neighbors {
 			if !a.closed_list[[2]int{vn[1], vn[0]}] { //czy odwiedzony
-				g_val_prop := a.g_cost[[2]int{current[0], current[1]}] + 1
+				g_val_prop := a.g_cost[[2]int{current[0], current[1]}] + 1    //cena dotarcia do punktu na zasadzie cena sąsiada++
 				if isPassable(a.grid, vn[1], vn[0], current[0], current[1]) { //czy nie ma ściany
 					if g_val_prop < a.g_cost[[2]int{vn[1], vn[0]}] || a.g_cost[[2]int{vn[1], vn[0]}] == 0 { //jesli powstanie lepsza cenowo droga to punktu to niech zaktualizuje
 						a.g_cost[[2]int{vn[1], vn[0]}] = g_val_prop                //obliczenie kosztu g
@@ -93,9 +92,6 @@ func (a *astar) a_star_solving(grid [][]int) {
 
 	}
 	slices.Reverse(a.path) //odwraca listę aby zaczynać od punktu 0,0
-	//fmt.Println(a.g_cost)
-	fmt.Println(a.path)
-	fmt.Println(a.visited_list)
 }
 
 func (a *astar) displaySolution(grid [][]int) { //funkcja od chatgpt wizualizująca rozwiązanie labiryntu w konsoli
